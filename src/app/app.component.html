@@ -1,0 +1,157 @@
+<div class="container-fluid py-5">
+  <div class="container">
+    <h2 class="text-white text-weight-800">Acerola's Epic Color Palettes<span class="small text-weight-300"> V1.1</span></h2>
+    <p class="text-white">Generate as many palettes as you want until you find one you like. Then take a picture of the palettes and tell Acerola which one you seted.</p>
+  </div>
+  <div class="container" id="color-form">
+    <div class="d-flex flex-wrap mb-3">
+      <div class="bg-white rounded-1 p-4 py-3 col-lg-6 col-12">
+        <div class="d-flex flex-gap-1 align-items-center flex-wrap">
+          <div class="d-flex align-items-center flex-grow-1">
+            <label class="text-weight-600" style="width: 50px;" for="color-mode">Mode</label>
+            <select class="form-select-sm ms-1 flex-grow-1 flex-shrink-1" [(ngModel)]="settings.mode" (ngModelChange)="init()" id="color-mode" name="color-mode">
+              <option *ngFor="let option of modes" [ngValue]="option">{{option.label}}</option>
+            </select>
+          </div>
+          <div class="d-flex align-items-center flex-gap-1 flex-grow-1">
+            <div class="d-flex align-items-center">
+              <label class="text-weight-600" style="width: 50px;" for="color-count">Colors</label>
+              <input class="form-control-sm ms-1 flex-grow-1" name="color-count" type="number" min="3" max="16" [(ngModel)]="settings.n" (ngModelChange)="init()"/>
+            </div>
+            <div class="flex-grow-1">
+              <button class="btn btn-primary btn-sm w-100 bg-dark text-weight-600 border-dark" (click)="setRandom()" value="Generate">New</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="small m-0 mt-2">{{settings.mode.description}}</p>
+        </div>
+      </div>
+      <div class="d-flex flex-column flex-grow-1 flex-gap-2 col-12 col-lg-6 ps-lg-4 py-3 py-lg-0">
+        <div class="">
+          <span class="text-white small">Base</span>
+          <div class="d-flex flex-gap-1">
+            <div style="height: 60px;width: 60px;"[ngStyle]="{'background':controls.output.base}">
+            </div>
+            <div class="d-flex flex-column justify-content-between flex-grow-1">
+              <!-- Hue -->
+              <div class="d-flex flex-gap-2 align-items-center flex-grow-1">
+                <div (mousedown)="setHue($event)" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.hue.base.value +'%', 'background-color':controls.hue.base.color}">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-white small m-0"><span>H :</span> {{(controls.hue.base.value/100)|percent:'1.0-2'}}</p>
+                </div>
+              </div>
+              <!-- Saturation and Fixed -->
+              <div class="d-flex flex-gap-2 align-items-center flex-grow-1">
+                <!-- Saturation -->
+                <div *ngIf="settings.mode.value == 'monochromatic'" (mousedown)="setSaturation($event)" [ngStyle]="{'background':'linear-gradient(to right,'+controls.saturation.base.stops[0]+', '+controls.saturation.base.stops[1]+')'}" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.saturation.base.value +'%','background-color':controls.saturation.base.color}">
+                  </div>
+                </div>
+
+                <!-- Fixed -->
+                <div *ngIf="settings.mode.value !== 'monochromatic'" (mousedown)="setFixed($event)" [ngStyle]="{'background':'linear-gradient(to right,'+controls.fixed.stops[0]+', '+controls.fixed.stops[1]+')'}" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.fixed.value +'%','background-color':controls.fixed.color}">
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-white small m-0"><span>S :</span> {{((settings.mode.value == 'monochromatic')?controls.saturation.base.value:controls.fixed.value)/100|percent:'1.0-2'}}</p>
+                </div>
+              </div>
+              <!-- Luminance -->
+              <div class="d-flex flex-gap-2 align-items-center">
+                <div (mousedown)="setLuminance($event)" [ngStyle]="{'background':'linear-gradient(to right,'+controls.luminance.base.stops[0]+', '+controls.luminance.base.stops[1]+')'}" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.luminance.base.value +'%','background-color':controls.luminance.base.color}">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-white small m-0"><span>L :</span> {{(controls.luminance.base.value/100)|percent:'1.0-2'}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <span class="text-white small">Offset</span>
+          <!-- Offset Interface -->
+          <div class="d-flex flex-gap-1">
+            <!-- Offset Preview -->
+            <div>
+              <div style="height: 38px; width: 60px;"[ngStyle]="{'background':controls.output.offset}">
+              </div>
+            </div>
+
+            <!-- Offset Sliders -->
+            <div class="d-flex flex-column justify-content-between flex-grow-1">
+              <!-- Hue Offset -->
+              <div class="d-flex flex-gap-2 align-items-center" *ngIf="settings.mode.value !== 'monochromatic'">
+                <div (mousedown)="setHueOffset($event)" [ngStyle]="{'background':'linear-gradient(to right,'+controls.hue.offset.stops[0]+', '+controls.hue.offset.stops[1]+', '+controls.hue.offset.stops[2]+', '+controls.hue.offset.stops[3]+')'}" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.hue.offset.value +'%','background-color':controls.hue.offset.color}">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-white small m-0"><span>H' :</span> {{(controls.hue.offset.value/100)|percent:'1.0-2'}}</p>
+                </div>
+              </div>
+              <!-- Saturation Offset -->
+              <div class="d-flex flex-gap-2 align-items-center" *ngIf="settings.mode.value == 'monochromatic'" >
+                <div (mousedown)="setSaturationOffset($event)" [ngStyle]="{'background':'linear-gradient(to right,'+controls.saturation.offset.stops[0]+', '+controls.saturation.offset.stops[1]+')'}" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.saturation.offset.value +'%','background-color':controls.saturation.offset.color}">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-white small m-0"><span>S' :</span> {{(controls.saturation.offset.value/100)|percent:'1.0-2'}}</p>
+                </div>
+              </div>
+              <!-- Luminance Offset -->
+              <div class="d-flex flex-gap-2 align-items-center">
+                <div (mousedown)="setLuminanceOffset($event)" [ngStyle]="{'background':'linear-gradient(to right,'+controls.luminance.offset.stops[0]+', '+controls.luminance.offset.stops[1]+')'}" class="slider">
+                  <div class="knob" [ngStyle]="{'left':controls.luminance.offset.value +'%','background-color':controls.luminance.offset.color}">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-white small m-0"><span>L' :</span> {{(controls.luminance.offset.value/100)|percent:'1.0-2'}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container" id="result">
+    <div class="d-flex w-100">
+      <div class="w-100" id="palettes">
+        <div class="mb-3" *ngFor="let palette of results; index as i ">
+          <div>
+            <p class="text-light mb-2"><span class="text-weight-600">Palette {{i + 1}}</span><span class="small text-weight-300 ps-1">{{(i == 0)?'Click a color to copy values.':''}}</span></p>
+          </div>
+          <div class="d-flex flex-column flex-md-row">
+            <div *ngFor="let c of palette" class="color-palette flex-grow-1 flex-shrink-1">
+              <div class="color-swatch" ngxClipboard [cbContent]="'r: '+c[0]+', g: '+c[1]+', b: '+c[2]+' '+rgbToHex(c)" (cbOnSuccess)="showSuccess()"  [ngStyle]="{'background-color': 'rgb(' + c[0] + ','+  c[1] + ',' + c[2] +')'}">
+                <div class="color-swatch-info rounded-1 d-flex flex-column justify-content-end p-1">
+                  <span class="text-white small">R: {{c[0]}}</span>
+                  <span class="text-white small">G: {{c[1]}}</span>
+                  <span class="text-white small">B: {{c[2]}}</span>
+                  <span class="text-white text-weight-600">{{rgbToHex(c)}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="details">
+          <div id="details-color"></div>
+          <span id="details-hex"></span>
+          <span id="details-rgb"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<ngbd-toast-global></ngbd-toast-global>
+<router-outlet></router-outlet>
